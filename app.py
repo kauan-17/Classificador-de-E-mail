@@ -5,25 +5,36 @@ import os
 import re
 import json
 
+# Define a pasta estática para os arquivos do frontend.
+# O nome 'static' deve corresponder ao nome da sua pasta.
 app = Flask(__name__, static_folder='static')
+# Permite requisições de outras origens para a rota '/predict'.
 CORS(app, resources={r"/predict": {"origins": "*"}})
 
+# Configura a API do Gemini.
+# A chave é lida de uma variável de ambiente, o que é uma prática segura para deploy.
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
+# Função para pré-processar o texto do e-mail.
 def preprocess_text(text):
     text = text.lower()
     text = re.sub(r'[^a-z\s]', '', text)
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
+# Rota para a página inicial. O Render tentará acessar essa rota por padrão.
 @app.route('/')
 def serve_index():
+    # Envia o arquivo index.html da pasta 'static'.
     return send_from_directory(app.static_folder, 'index.html')
 
+# Rota para servir os arquivos estáticos (CSS, JS).
 @app.route('/<path:path>')
 def serve_static(path):
+    # Envia qualquer arquivo da pasta 'static'.
     return send_from_directory(app.static_folder, path)
 
+# Rota da API para processar o e-mail.
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
@@ -69,6 +80,9 @@ def predict():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# Executa o servidor Flask.
 if __name__ == '__main__':
+    # Obtém a porta do Render (se existir) ou usa a porta 5000.
     port = int(os.environ.get("PORT", 5000))
+    # O host '0.0.0.0' é necessário para que a aplicação seja acessível externamente no Render.
     app.run(host='0.0.0.0', port=port)
