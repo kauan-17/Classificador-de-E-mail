@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classificador de E-mail</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Classificador de E-mail</h1>
+        <p>Automatize a classificação de e-mails para otimizar seu tempo. Insira o texto ou faça upload de um arquivo para começar.</p>
+
+        <form id="email-form">
+            <label id="file-label" class="file-upload-label" for="email-file">
+                Clique para fazer upload (.txt, .pdf)
+            </label>
+            <input type="file" id="email-file" name="email_file" accept=".txt, .pdf">
+            
+            <span>ou</span>
+
+            <textarea id="email-text" name="email_text" placeholder="Cole o texto do e-mail aqui..."></textarea>
+            
+            <button type="submit">Analisar E-mail</button>
+        </form>
+
+        <div class="loader" id="loader"></div>
+
+        <div id="results">
+            <h3>Resultado da Análise</h3>
+            <p><strong>Categoria:</strong> <span id="category-result"></span></p>
+            <p><strong>Resposta Sugerida:</strong> <span id="response-result"></span></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

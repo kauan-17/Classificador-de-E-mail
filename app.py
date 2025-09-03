@@ -1,0 +1,88 @@
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
+import google.generativeai as genai
+import os
+import re
+import json
+
+app = Flask(__name__, static_folder='static')
+# Permitir solicitações de qualquer origem
+CORS(app, resources={r"/predict": {"origins": "*"}})
+
+# Configura a API do Gemini
+genai.configure(api_key="AIzaSyCR3yBxBf-YR6u0-L_sddAOpY79FCMyNFA")
+
+def preprocess_text(text):
+    """
+    Função de pré-processamento de texto.
+    """
+    text = text.lower()
+    text = re.sub(r'[^a-z\s]', '', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
+@app.route('/')
+def serve_index():
+    """
+    Servir o arquivo index.html do diretório 'static'.
+    """
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/<path:filename>')
+def serve_static(filename):
+    """
+    Servir arquivos estáticos (CSS, JS, etc.).
+    """
+    return send_from_directory(app.static_folder, filename)
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    """
+    Endpoint para classificar o e-mail e gerar uma resposta.
+    """
+    try:
+        data = request.get_json()
+        email_content = data.get('email_content', '')
+
+        if not email_content:
+            return jsonify({'error': 'Nenhum conteúdo de e-mail fornecido'}), 400
+
+        processed_content = preprocess_text(email_content)
+        
+        prompt = f"""
+        Você é um assistente de IA especializado em classificar e-mails de clientes.
+        Classifique o seguinte e-mail como "Produtivo" ou "Improdutivo" e gere uma resposta automática adequada.
+        - "Produtivo" significa que o e-mail requer uma ação ou atenção direta (ex: pedido de ajuda, reclamação, solicitação de informação, etc.).
+        - "Improdutivo" significa que o e-mail não requer uma ação direta, sendo apenas uma mensagem de cortesia ou spam.
+        
+        E-mail:
+        "{processed_content}"
+
+        Siga este formato JSON para a sua resposta:
+        {{
+          "category": "Produtivo" ou "Improdutivo",
+          "response": "Resposta automática sugerida"
+        }}
+        """
+
+        model = genai.GenerativeModel(
+            model_name='gemini-2.5-flash-preview-05-20',
+            system_instruction="Sua resposta deve ser um objeto JSON válido, sem nenhum texto extra antes ou depois do JSON."
+        )
+
+        response = model.generate_content(
+            contents=[{'parts': [{'text': prompt}]}],
+            generation_config={'response_mime_type': 'application/json'}
+        )
+        
+        response_json_text = response.text.replace('```json', '').replace('```', '')
+        response_object = json.loads(response_json_text)
+        
+        return jsonify(response_object), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
