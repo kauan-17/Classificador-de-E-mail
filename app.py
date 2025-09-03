@@ -6,16 +6,11 @@ import re
 import json
 
 app = Flask(__name__, static_folder='static')
-# Permitir solicitações de qualquer origem
 CORS(app, resources={r"/predict": {"origins": "*"}})
 
-# Configura a API do Gemini
-genai.configure(api_key="AIzaSyCR3yBxBf-YR6u0-L_sddAOpY79FCMyNFA")
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
 def preprocess_text(text):
-    """
-    Função de pré-processamento de texto.
-    """
     text = text.lower()
     text = re.sub(r'[^a-z\s]', '', text)
     text = re.sub(r'\s+', ' ', text).strip()
@@ -23,23 +18,14 @@ def preprocess_text(text):
 
 @app.route('/')
 def serve_index():
-    """
-    Servir o arquivo index.html do diretório 'static'.
-    """
     return send_from_directory(app.static_folder, 'index.html')
 
-@app.route('/<path:filename>')
-def serve_static(filename):
-    """
-    Servir arquivos estáticos (CSS, JS, etc.).
-    """
-    return send_from_directory(app.static_folder, filename)
+@app.route('/<path:path>')
+def serve_static(path):
+    return send_from_directory(app.static_folder, path)
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    """
-    Endpoint para classificar o e-mail e gerar uma resposta.
-    """
     try:
         data = request.get_json()
         email_content = data.get('email_content', '')
@@ -84,5 +70,4 @@ def predict():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=5000)
