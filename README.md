@@ -37,7 +37,7 @@ Instale as Dependências:
 
 py -m pip install -r requirements.txt
 
-Configure a Chave de API:
+### *Configure a Chave de API:*
 
 Crie um arquivo .env na raiz do projeto e adicione sua chave de API.
 
