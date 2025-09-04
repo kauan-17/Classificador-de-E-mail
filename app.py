@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, render_template
 from flask_cors import CORS
 import google.generativeai as genai
 import os
@@ -7,7 +7,7 @@ import json
 
 # Define a pasta estática para os arquivos do frontend.
 # O nome 'static' deve corresponder ao nome da sua pasta.
-app = Flask(__name__, static_folder='static')
+app = Flask(__name__, static_folder='static', template_folder='static')
 # Permite requisições de outras origens para a rota '/predict'.
 CORS(app, resources={r"/predict": {"origins": "*"}})
 
@@ -26,7 +26,7 @@ def preprocess_text(text):
 @app.route('/')
 def serve_index():
     # Envia o arquivo index.html da pasta 'static'.
-    return send_from_directory(app.static_folder, 'index.html')
+    return render_template('index.html')
 
 # Rota para servir os arquivos estáticos (CSS, JS).
 @app.route('/<path:path>')
