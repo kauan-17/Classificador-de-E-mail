@@ -30,11 +30,17 @@ cd seu-repositorio
 
 ### *No Windows*
 python -m venv venv
+
 venv\Scripts\activate
+
 Instale as Dependências:
+
 py -m pip install -r requirements.txt
+
 Configure a Chave de API:
+
 Crie um arquivo .env na raiz do projeto e adicione sua chave de API.
+
 GOOGLE_API_KEY="SUA_CHAVE_DE_API_AQUI"
 
 ### *Execute a Aplicação:*
