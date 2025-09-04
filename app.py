@@ -5,9 +5,12 @@ import os
 import re
 import json
 
-# Define a pasta estática para os arquivos do frontend.
-# O nome 'static' deve corresponder ao nome da sua pasta.
-app = Flask(__name__, static_folder='static', template_folder='static')
+# Obtém o caminho absoluto do diretório onde o script está sendo executado.
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+# Define a pasta estática para os arquivos do frontend,
+# usando o caminho absoluto para evitar erros.
+app = Flask(__name__, static_folder='static', template_folder=os.path.join(BASE_DIR, 'static'))
 # Permite requisições de outras origens para a rota '/predict'.
 CORS(app, resources={r"/predict": {"origins": "*"}})
 
