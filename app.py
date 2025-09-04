@@ -22,12 +22,13 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 # -------------------------
-# Modelo de Tabela
+# Modelo de Tabela com subcategoria
 # -------------------------
 class Email(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     conteudo = db.Column(db.Text, nullable=False)
     categoria = db.Column(db.String(50), nullable=False)
+    subcategoria = db.Column(db.String(50), nullable=True)
     resposta = db.Column(db.Text, nullable=False)
     data_processamento = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -44,7 +45,7 @@ genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 # -------------------------
 def preprocess_text(text):
     text = text.lower()
-    text = re.sub(r'[^a-z\s]', '', text)
+    text = re.sub(r'[^a-z0-9\s]', '', text)
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
@@ -58,48 +59,50 @@ def serve_index():
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
-        # Verifica se arquivo foi enviado
         email_content = ""
         if 'email_file' in request.files:
             file = request.files['email_file']
             filename = file.filename.lower()
             if filename.endswith(".pdf"):
-                # Extrair texto do PDF
                 with pdfplumber.open(file) as pdf:
                     pages = [page.extract_text() for page in pdf.pages]
                     email_content = "\n".join([p for p in pages if p])
             else:
                 email_content = file.read().decode("utf-8")
         else:
-            # Se JSON
             data = request.get_json(silent=True) or {}
             email_content = data.get("email_content", "").strip()
 
         if not email_content:
-            return jsonify({"category": "Indefinido",
-                            "response": "Recebemos seu e-mail, mas o conteúdo parece estar ilegível ou vazio."}), 400
+            return jsonify({
+                "category": "Indefinido",
+                "subcategory": "Indefinida",
+                "response": "Recebemos seu e-mail, mas o conteúdo parece estar ilegível ou vazio."
+            }), 400
 
         processed_content = preprocess_text(email_content)
 
-        # Prompt para AI
+        # Prompt atualizado com subcategorias
         prompt = f"""
-        Você é um assistente de IA especializado em classificar e-mails de clientes.
-        Classifique o seguinte e-mail como "Produtivo" ou "Improdutivo" e gere uma resposta automática adequada.
+        Você é um assistente de IA que classifica e-mails de clientes.
+        Classifique o e-mail em Categoria Principal (Produtivo ou Improdutivo)
+        e Subcategoria (Solicitação de Status, Reclamação, Agradecimento, Spam)
+        e gere uma resposta automática adequada.
 
         E-mail:
         "{processed_content}"
 
-        Siga este formato JSON para a sua resposta:
+        Responda apenas com JSON no formato:
         {{
-          "category": "Produtivo" ou "Improdutivo",
+          "category": "Produtivo ou Improdutivo",
+          "subcategory": "Subcategoria apropriada",
           "response": "Resposta automática sugerida"
         }}
         """
 
-        # Chamada ao modelo
         model = genai.GenerativeModel(
             model_name="gemini-2.5-flash-preview-05-20",
-            system_instruction="Sua resposta deve ser um objeto JSON válido, sem nenhum texto extra antes ou depois do JSON."
+            system_instruction="Retorne apenas um objeto JSON válido, sem texto extra."
         )
 
         response = model.generate_content(
@@ -113,14 +116,15 @@ def predict():
         except json.JSONDecodeError:
             response_object = {
                 "category": "Indefinido",
+                "subcategory": "Indefinida",
                 "response": "Não foi possível classificar o e-mail."
             }
 
-        # Salvar no banco
         novo_email = Email(
             conteudo=email_content,
-            categoria=response_object["category"],
-            resposta=response_object["response"]
+            categoria=response_object.get("category", "Indefinido"),
+            subcategoria=response_object.get("subcategory", "Indefinida"),
+            resposta=response_object.get("response", "")
         )
         db.session.add(novo_email)
         db.session.commit()
@@ -138,6 +142,7 @@ def history():
             "id": e.id,
             "conteudo": e.conteudo,
             "categoria": e.categoria,
+            "subcategory": e.subcategoria,
             "resposta": e.resposta,
             "data_processamento": e.data_processamento.strftime("%Y-%m-%d %H:%M:%S")
         }
@@ -151,3 +156,4 @@ def history():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+# -------------------------

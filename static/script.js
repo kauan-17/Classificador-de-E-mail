@@ -44,6 +44,8 @@ function toggleLoader(show) {
 function updateResults(data, emailContent) {
   document.getElementById("category-result").textContent =
     data.category || "Indefinido";
+  document.getElementById("subcategory-result").textContent =
+    data.subcategory || "Nenhuma";
   document.getElementById("response-result").textContent =
     data.response || "Sem resposta gerada.";
   resultsDiv.style.display = "block";
@@ -53,6 +55,7 @@ function updateResults(data, emailContent) {
     subject: emailSubject.value || "Sem assunto",
     content: emailContent,
     category: data.category,
+    subcategory: data.subcategory,
     response: data.response,
   });
 }
@@ -64,6 +67,7 @@ function addToHistory(entry) {
     <strong>De:</strong> ${entry.sender} <br>
     <strong>Assunto:</strong> ${entry.subject} <br>
     <strong>Categoria:</strong> ${entry.category} <br>
+    <strong>Subcategoria:</strong> ${entry.subcategory || "Nenhuma"} <br>
     <strong>Resposta:</strong> ${entry.response} <br>
     <strong>Trecho do conteúdo:</strong> ${entry.content.substring(0, 100)}...
     <hr>
@@ -136,3 +140,4 @@ emailFile.addEventListener("change", () => {
     showToast(`Arquivo selecionado: ${emailFile.files[0].name}`, "info");
   }
 });
+// -------------------------
