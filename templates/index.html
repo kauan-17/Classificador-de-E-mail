@@ -4,19 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Classificador de E-mail</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-
     <div class="container">
         <h1>Classificador de E-mail</h1>
-        <p>Automatize a classificação de e-mails para otimizar seu tempo. Insira o texto ou faça upload de um arquivo para começar.</p>
+        <p>Insira o texto do e-mail ou faça upload de um arquivo (.txt, .pdf).</p>
 
         <form id="email-form">
             <label id="file-label" class="file-upload-label" for="email-file">
-                Clique para fazer upload (.txt, .pdf)
+                Clique para fazer upload
             </label>
-            <input type="file" id="email-file" name="email_file" accept=".txt, .pdf">
+            <input type="file" id="email-file" name="email_file" accept=".txt,.pdf">
             
             <span>ou</span>
 
@@ -30,10 +29,11 @@
         <div id="results">
             <h3>Resultado da Análise</h3>
             <p><strong>Categoria:</strong> <span id="category-result"></span></p>
-            <p><strong>Resposta Sugerida:</strong> <span id="response-result"></span></p>
+            <p><strong>Resposta Sugerida:</strong></p>
+            <pre id="response-result"></pre>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

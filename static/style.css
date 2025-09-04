@@ -14,41 +14,27 @@ body {
     background-color: #fff;
     padding: 40px;
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     width: 100%;
     max-width: 700px;
     text-align: center;
 }
 
-h1 {
-    color: #2c3e50;
-}
+h1 { color: #2c3e50; }
+p { color: #7f8c8d; margin-bottom: 20px; }
 
-p {
-    color: #7f8c8d;
-    margin-bottom: 30px;
-}
+form { display: flex; flex-direction: column; gap: 20px; }
 
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-input[type="file"],
-textarea {
+input[type="file"], textarea {
     width: 100%;
     padding: 15px;
     border: 1px solid #ddd;
     border-radius: 5px;
-    box-sizing: border-box;
     font-size: 16px;
+    box-sizing: border-box;
 }
 
-textarea {
-    min-height: 200px;
-    resize: vertical;
-}
+textarea { min-height: 200px; resize: vertical; }
 
 .file-upload-label {
     display: block;
@@ -57,16 +43,11 @@ textarea {
     padding: 15px;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: 0.3s;
 }
 
-.file-upload-label:hover {
-    background-color: #2980b9;
-}
-
-input[type="file"] {
-    display: none; /* Esconde o input de arquivo padrão */
-}
+.file-upload-label:hover { background-color: #2980b9; }
+input[type="file"] { display: none; }
 
 button {
     background-color: #2ecc71;
@@ -77,12 +58,10 @@ button {
     font-size: 18px;
     font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: 0.3s;
 }
 
-button:hover {
-    background-color: #27ae60;
-}
+button:hover { background-color: #27ae60; }
 
 #results {
     margin-top: 30px;
@@ -90,16 +69,7 @@ button:hover {
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     text-align: left;
-    display: none; /* Inicialmente escondido */
-}
-
-#results h3 {
-    color: #2c3e50;
-}
-
-#results p {
-    margin: 10px 0;
-    color: #333;
+    display: none;
 }
 
 .loader {
@@ -113,10 +83,8 @@ button:hover {
     display: none;
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
 #results pre {
     background-color: #f8f8f8;
     padding: 15px;

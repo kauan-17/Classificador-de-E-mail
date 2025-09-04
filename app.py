@@ -1,91 +1,79 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
+import os, re, json
+import pdfplumber
 import google.generativeai as genai
-import os
-import re
-import json
 
-# Obtém o caminho absoluto do diretório onde o script está sendo executado.
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-
-# Define a pasta estática para os arquivos do frontend,
-# usando o caminho absoluto para evitar erros.
-app = Flask(__name__, static_folder='static')
-# Permite requisições de outras origens para a rota '/predict'.
+app = Flask(__name__,
+            static_folder=os.path.join(BASE_DIR, "static"),
+            template_folder=os.path.join(BASE_DIR, "templates"))
 CORS(app, resources={r"/predict": {"origins": "*"}})
 
-# Configura a API do Gemini.
-# A chave é lida de uma variável de ambiente, o que é uma prática segura para deploy.
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
-# Função para pré-processar o texto do e-mail.
+@app.route("/")
+def serve_index():
+    return render_template("index.html")
+
 def preprocess_text(text):
     text = text.lower()
     text = re.sub(r'[^a-z\s]', '', text)
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
-# Rota para a página inicial. O Render tentará acessar essa rota por padrão.
-@app.route('/')
-def serve_index():
-    # Envia o arquivo index.html da pasta 'static'.
-    return send_from_directory(app.static_folder, 'index.html')
+def read_file(file):
+    if file.filename.endswith(".txt"):
+        return file.read().decode("utf-8")
+    elif file.filename.endswith(".pdf"):
+        text = ""
+        with pdfplumber.open(file) as pdf:
+            for page in pdf.pages:
+                text += page.extract_text() + "\n"
+        return text
+    return ""
 
-# Rota para servir os arquivos estáticos (CSS, JS).
-@app.route('/<path:path>')
-def serve_static(path):
-    # Envia qualquer arquivo da pasta 'static'.
-    return send_from_directory(app.static_folder, path)
+def call_ai(processed_content):
+    prompt = f"""
+    Classifique o seguinte e-mail como 'Produtivo' ou 'Improdutivo' e gere uma resposta:
 
-# Rota da API para processar o e-mail.
-@app.route('/predict', methods=['POST'])
+    "{processed_content}"
+
+    Formato JSON:
+    {{
+        "category": "Produtivo" ou "Improdutivo",
+        "response": "Resposta automática"
+    }}
+    """
+    model = genai.GenerativeModel(
+        model_name="gemini-2.5-flash-preview-05-20",
+        system_instruction="Resposta deve ser JSON válido, sem texto extra."
+    )
+    response = model.generate_content(
+        contents=[{"parts":[{"text": prompt}]}],
+        generation_config={"response_mime_type": "application/json"}
+    )
+    try:
+        text = response.text.replace("```json","").replace("```","")
+        return json.loads(text)
+    except:
+        return {"category":"Indefinido","response":"Não foi possível classificar o e-mail."}
+
+@app.route("/predict", methods=["POST"])
 def predict():
     try:
-        data = request.get_json()
-        email_content = data.get('email_content', '')
-
-        if not email_content:
-            return jsonify({'error': 'Nenhum conteúdo de e-mail fornecido'}), 400
-
-        processed_content = preprocess_text(email_content)
-        
-        prompt = f"""
-        Você é um assistente de IA especializado em classificar e-mails de clientes.
-        Classifique o seguinte e-mail como "Produtivo" ou "Improdutivo" e gere uma resposta automática adequada.
-        - "Produtivo" significa que o e-mail requer uma ação ou atenção direta (ex: pedido de ajuda, reclamação, solicitação de informação, etc.).
-        - "Improdutivo" significa que o e-mail não requer uma ação direta, sendo apenas uma mensagem de cortesia ou spam.
-        
-        E-mail:
-        "{processed_content}"
-
-        Siga este formato JSON para a sua resposta:
-        {{
-          "category": "Produtivo" ou "Improdutivo",
-          "response": "Resposta automática sugerida"
-        }}
-        """
-
-        model = genai.GenerativeModel(
-            model_name='gemini-2.5-flash-preview-05-20',
-            system_instruction="Sua resposta deve ser um objeto JSON válido, sem nenhum texto extra antes ou depois do JSON."
-        )
-
-        response = model.generate_content(
-            contents=[{'parts': [{'text': prompt}]}],
-            generation_config={'response_mime_type': 'application/json'}
-        )
-        
-        response_json_text = response.text.replace('```json', '').replace('```', '')
-        response_object = json.loads(response_json_text)
-        
-        return jsonify(response_object), 200
-
+        email_text = request.form.get("email_text", "").strip()
+        email_file = request.files.get("email_file")
+        if email_file and not email_text:
+            email_text = read_file(email_file)
+        if not email_text:
+            return jsonify({"error":"Nenhum conteúdo fornecido"}), 400
+        processed_content = preprocess_text(email_text)
+        response_object = call_ai(processed_content)
+        return jsonify(response_object)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
-# Executa o servidor Flask.
-if __name__ == '__main__':
-    # Obtém a porta do Render (se existir) ou usa a porta 5000.
-    port = int(os.environ.get("PORT", 5000))
-    # O host '0.0.0.0' é necessário para que a aplicação seja acessível externamente no Render.
-    app.run(host='0.0.0.0', port=port)
+if __name__=="__main__":
+    port = int(os.environ.get("PORT",5000))
+    app.run(host="0.0.0.0", port=port)
