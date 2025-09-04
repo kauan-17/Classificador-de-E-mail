@@ -6,13 +6,13 @@ Este projeto é um classificador de e-mail que utiliza a API do Gemini para cate
 A estrutura de pastas segue as convenções recomendadas do Flask, garantindo uma implantação e manutenção mais fáceis.
 
 ### /nome-do-seu-projeto
-├── app.py                      # Backend da aplicação em Flask
-├── requirements.txt            # Dependências Python
-├── Procfile                    # Comando de inicialização para o Render
-├── static/                     # Arquivos estáticos (CSS, JS)
+├── app.py                     
+├── requirements.txt          
+├── Procfile                   
+├── static/                    
 │   ├── style.css
 │   └── script.js
-└── templates/                  # Arquivos de template (HTML)
+└── templates/                 
     └── index.html
 
 ## *⚙️ Requisitos*
