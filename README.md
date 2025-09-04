@@ -5,7 +5,7 @@ Este projeto é um classificador de e-mail que utiliza a API do Gemini para cate
 ## *📂 Estrutura do Projeto*
 A estrutura de pastas segue as convenções recomendadas do Flask, garantindo uma implantação e manutenção mais fáceis.
 
-### /nome-do-seu-projeto
+#### /Classificador de E mail
 ├── app.py                     
 ├── requirements.txt          
 ├── Procfile                   
@@ -15,7 +15,7 @@ A estrutura de pastas segue as convenções recomendadas do Flask, garantindo um
 └── templates/                 
     └── index.html
 
-## *⚙️ Requisitos*
+#### *⚙️ Requisitos*
 Para executar este projeto localmente, você precisa ter o Python 3.10 ou superior instalado. Além disso, é necessário ter uma chave de API para o Google Gemini.
 
 ## *🚀 Instalação e Execução*
