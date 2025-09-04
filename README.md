@@ -12,7 +12,8 @@ A estrutura de pastas segue as convenções recomendadas do Flask, garantindo um
 ├── static/                    
 │   ├── style.css
 │   └── script.js
-└── templates/                 
+│ 
+└──  templates/                 
     └── index.html
 
 #### *⚙️ Requisitos*
