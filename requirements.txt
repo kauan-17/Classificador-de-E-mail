@@ -12,7 +12,7 @@ grpcio-status==1.71.2
 proto-plus==1.26.1
 pydantic==2.11.7
 pydantic-core==2.33.2
-PyPDF2==3.1.1
+PyPDF2==3.0.1
 pdfminer.six==20250506
 pdfplumber==0.11.7
 pypdfium2==4.30.0
