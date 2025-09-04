@@ -15,7 +15,6 @@ const historyList = document.getElementById("history-list");
 
 // Função para mostrar toast
 function showToast(message, type = "info", duration = 4000) {
-  // Cria container se não existir
   let toastContainer = document.getElementById("toast-container");
   if (!toastContainer) {
     toastContainer = document.createElement("div");
@@ -29,7 +28,6 @@ function showToast(message, type = "info", duration = 4000) {
   toastContainer.appendChild(toast);
 
   setTimeout(() => toast.classList.add("show"), 100);
-
   setTimeout(() => {
     toast.classList.remove("show");
     setTimeout(() => toast.remove(), 400);
@@ -50,7 +48,6 @@ function updateResults(data, emailContent) {
     data.response || "Sem resposta gerada.";
   resultsDiv.style.display = "block";
 
-  // Adiciona no histórico
   addToHistory({
     sender: emailSender.value || "Desconhecido",
     subject: emailSubject.value || "Sem assunto",
@@ -60,7 +57,7 @@ function updateResults(data, emailContent) {
   });
 }
 
-// Adiciona item no histórico
+// Histórico
 function addToHistory(entry) {
   const li = document.createElement("li");
   li.innerHTML = `
@@ -75,25 +72,6 @@ function addToHistory(entry) {
   historyDiv.style.display = "block";
 }
 
-// Pega conteúdo do email
-function getEmailContent() {
-  return new Promise((resolve, reject) => {
-    if (emailTextarea.value.trim() !== "") {
-      resolve(emailTextarea.value);
-    } else if (emailFile.files.length > 0) {
-      const file = emailFile.files[0];
-      const reader = new FileReader();
-      reader.onload = (event) => resolve(event.target.result);
-      reader.onerror = () => reject("Erro ao ler o arquivo.");
-      reader.readAsText(file);
-    } else {
-      reject(
-        "Por favor, insira o texto do e-mail ou faça upload de um arquivo."
-      );
-    }
-  });
-}
-
 // Envio do formulário
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -101,16 +79,19 @@ form.addEventListener("submit", async (e) => {
   toggleLoader(true);
 
   try {
-    const emailContent = await getEmailContent();
+    const formData = new FormData();
+    if (emailTextarea.value.trim() !== "") {
+      formData.append("email_content", emailTextarea.value.trim());
+    }
+    if (emailFile.files.length > 0) {
+      formData.append("email_file", emailFile.files[0]);
+    }
+    formData.append("sender", emailSender.value.trim());
+    formData.append("subject", emailSubject.value.trim());
 
     const response = await fetch("/predict", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email_content: emailContent,
-        sender: emailSender.value,
-        subject: emailSubject.value,
-      }),
+      body: formData, // enviando multipart/form-data
     });
 
     if (!response.ok) {
@@ -119,8 +100,15 @@ form.addEventListener("submit", async (e) => {
     }
 
     const data = await response.json();
+    const emailContent = emailTextarea.value || (emailFile.files[0]?.name || "");
     updateResults(data, emailContent);
     showToast("E-mail processado com sucesso!", "success");
+
+    // Limpar campos após envio
+    emailTextarea.value = "";
+    emailFile.value = "";
+    emailSender.value = "";
+    emailSubject.value = "";
   } catch (error) {
     resultsDiv.style.display = "none";
     showToast(
@@ -142,10 +130,9 @@ document.getElementById("clear-btn").addEventListener("click", () => {
   emailSubject.value = "";
 });
 
-// Atualiza nome do arquivo e mostra toast
+// Mostra toast com nome do arquivo
 emailFile.addEventListener("change", () => {
   if (emailFile.files.length > 0) {
     showToast(`Arquivo selecionado: ${emailFile.files[0].name}`, "info");
   }
 });
-// -------------------------

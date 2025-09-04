@@ -6,6 +6,7 @@ import os
 import re
 import json
 from datetime import datetime
+import pdfplumber  # Para extrair texto de PDFs
 
 # -------------------------
 # Configuração do Flask
@@ -30,7 +31,6 @@ class Email(db.Model):
     resposta = db.Column(db.Text, nullable=False)
     data_processamento = db.Column(db.DateTime, default=datetime.utcnow)
 
-# Criar as tabelas no banco
 with app.app_context():
     db.create_all()
 
@@ -58,11 +58,26 @@ def serve_index():
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
-        data = request.get_json(silent=True) or {}
-        email_content = data.get("email_content", "").strip()
+        # Verifica se arquivo foi enviado
+        email_content = ""
+        if 'email_file' in request.files:
+            file = request.files['email_file']
+            filename = file.filename.lower()
+            if filename.endswith(".pdf"):
+                # Extrair texto do PDF
+                with pdfplumber.open(file) as pdf:
+                    pages = [page.extract_text() for page in pdf.pages]
+                    email_content = "\n".join([p for p in pages if p])
+            else:
+                email_content = file.read().decode("utf-8")
+        else:
+            # Se JSON
+            data = request.get_json(silent=True) or {}
+            email_content = data.get("email_content", "").strip()
 
         if not email_content:
-            return jsonify({"error": "Nenhum conteúdo de e-mail fornecido"}), 400
+            return jsonify({"category": "Indefinido",
+                            "response": "Recebemos seu e-mail, mas o conteúdo parece estar ilegível ou vazio."}), 400
 
         processed_content = preprocess_text(email_content)
 
@@ -93,7 +108,6 @@ def predict():
         )
 
         response_json_text = response.text.replace("```json", "").replace("```", "")
-
         try:
             response_object = json.loads(response_json_text)
         except json.JSONDecodeError:
@@ -102,9 +116,7 @@ def predict():
                 "response": "Não foi possível classificar o e-mail."
             }
 
-        # -------------------------
         # Salvar no banco
-        # -------------------------
         novo_email = Email(
             conteudo=email_content,
             categoria=response_object["category"],
