@@ -1,9 +1,9 @@
-Classificador de E-mail com IA
-Visão Geral
-Este projeto é um classificador de e-mail que utiliza a API do Gemini para categorizar e-mails como "Produtivo" ou "Improdutivo" e, em seguida, gerar uma resposta automática. O backend é construído com Flask em Python e o frontend com HTML, CSS e JavaScript.
+📧 Classificador de E-mail com IA
+💡 Visão Geral
+Este projeto é um classificador de e-mail que utiliza a API do Gemini para categorizar e-mails como "Produtivo" ou "Improdutivo" e, em seguida, gerar uma resposta automática. O backend é construído com Flask em Python e o frontend com HTML, CSS e JavaScript, proporcionando uma interface simples e funcional.
 
-Estrutura do Projeto
-A estrutura de pastas do projeto segue as convenções recomendadas para aplicações Flask, garantindo uma implantação e manutenção mais fáceis.
+📂 Estrutura do Projeto
+A estrutura de pastas segue as convenções recomendadas do Flask, garantindo uma implantação e manutenção mais fáceis.
 
 /nome-do-seu-projeto
 ├── app.py                      # Backend da aplicação em Flask
@@ -15,10 +15,10 @@ A estrutura de pastas do projeto segue as convenções recomendadas para aplica�
 └── templates/                  # Arquivos de template (HTML)
     └── index.html
 
-Requisitos
+⚙️ Requisitos
 Para executar este projeto localmente, você precisa ter o Python 3.10 ou superior instalado. Além disso, é necessário ter uma chave de API para o Google Gemini.
 
-Instalação e Execução
+🚀 Instalação e Execução
 Siga os passos abaixo para configurar e executar a aplicação em seu ambiente local.
 
 Clone o Repositório:
@@ -28,10 +28,13 @@ cd seu-repositorio
 
 Crie e Ative um Ambiente Virtual (Recomendado):
 
+# No Linux/macOS
 python -m venv venv
-source venv/bin/activate   # No Linux/macOS
-# ou
-venv\Scripts\activate      # No Windows
+source venv/bin/activate
+
+# No Windows
+python -m venv venv
+venv\Scripts\activate
 
 Instale as Dependências:
 
@@ -49,7 +52,7 @@ python app.py
 
 A aplicação estará disponível em http://127.0.0.1:5000.
 
-Implantação (Deploy)
+☁️ Implantação (Deploy)
 Para implantar no Render, você precisará configurar as variáveis de ambiente e o comando de inicialização.
 
 Variáveis de Ambiente:
