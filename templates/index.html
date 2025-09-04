@@ -12,25 +12,46 @@
         <p>Insira o texto do e-mail ou faça upload de um arquivo (.txt, .pdf).</p>
 
         <form id="email-form">
+            <!-- Campo de remetente (opcional) -->
+            <input type="text" id="email-sender" name="email_sender" placeholder="Nome do Remetente (opcional)">
+            
+            <!-- Campo de assunto (opcional) -->
+            <input type="text" id="email-subject" name="email_subject" placeholder="Assunto do E-mail (opcional)">
+
+            <!-- Upload de arquivo -->
             <label id="file-label" class="file-upload-label" for="email-file">
                 Clique para fazer upload
             </label>
             <input type="file" id="email-file" name="email_file" accept=".txt,.pdf">
+            <span id="file-name" class="file-name"></span>
             
             <span>ou</span>
 
+            <!-- Texto manual -->
             <textarea id="email-text" name="email_text" placeholder="Cole o texto do e-mail aqui..."></textarea>
             
-            <button type="submit">Analisar E-mail</button>
+            <!-- Botões -->
+            <div class="form-buttons">
+                <button type="submit">Analisar E-mail</button>
+                <button type="reset" id="clear-btn">Limpar</button>
+            </div>
         </form>
 
+        <!-- Loader -->
         <div class="loader" id="loader"></div>
 
-        <div id="results">
+        <!-- Resultados -->
+        <div id="results" style="display:none;">
             <h3>Resultado da Análise</h3>
             <p><strong>Categoria:</strong> <span id="category-result"></span></p>
             <p><strong>Resposta Sugerida:</strong></p>
             <pre id="response-result"></pre>
+        </div>
+
+        <!-- Histórico (opcional) -->
+        <div id="history" style="display:none;">
+            <h3>Histórico de Análises</h3>
+            <ul id="history-list"></ul>
         </div>
     </div>
 
