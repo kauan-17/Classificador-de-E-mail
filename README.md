@@ -49,16 +49,25 @@ py app.py
 
 A aplicação estará disponível em http://127.0.0.1:5000.
 
-## *☁️ Implantação (Deploy)*
-Para implantar no Render, você precisará configurar as variáveis de ambiente e o comando de inicialização.
+## *☁️ Implantação (Deploy) com Render*
+Para hospedar a aplicação online, você pode usar a plataforma Render.
 
-### Variáveis de Ambiente:
+Crie uma Conta no Render: Se ainda não tiver, crie uma conta em https://render.com/.
 
-Adicione a sua chave de API nas variáveis de ambiente do Render, usando o nome GOOGLE_API_KEY.
-Que e fornecido por aqui: https://aistudio.google.com/app/prompts/new_chat
+Crie um Novo Web Service: No seu painel do Render, clique em "New" e selecione "Web Service".
 
-### *Comando de Inicialização (Procfile):*
+Conecte o Repositório: Conecte sua conta do GitHub e selecione o repositório Classificador-de-E-mail.
 
-Certifique-se de que o seu Procfile contenha o seguinte comando, que é essencial para o Render iniciar a aplicação.
+### Configure as Variáveis de Ambiente:
+
+Vá para a seção "Environment" ou "Environment Variables" do seu serviço no Render.
+
+Adicione uma nova variável com a chave GOOGLE_API_KEY e o valor da sua chave de API.
+
+### Verifique o Comando de Inicialização:
+
+Certifique-se de que o Render esteja usando o comando correto para iniciar a aplicação, que deve estar no seu arquivo Procfile:
 
 web: gunicorn app:app
+### Observação sobre a Hospedagem Gratuita: 
+A versão gratuita do Render tem algumas limitações. Uma delas é o suporte a arquivos grandes, que pode causar falhas na implantação. A URL da aplicação implantada será algo como: https://classificador-de-e-mail.onrender.com/.
