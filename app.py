@@ -38,7 +38,7 @@ with app.app_context():
 # -------------------------
 # Configuração da API Gemini
 # -------------------------
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+genai.configure(api_key=os.environ.get("AIzaSyBwmm8sb58AVT3ZUejJv5voEU4hqIl-MRs"))
 
 # -------------------------
 # Função de pré-processamento
@@ -59,8 +59,9 @@ def serve_index():
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
+        # Recebe conteúdo do arquivo ou texto
         email_content = ""
-        if 'email_file' in request.files:
+        if 'email_file' in request.files and request.files['email_file'].filename != "":
             file = request.files['email_file']
             filename = file.filename.lower()
             if filename.endswith(".pdf"):
@@ -70,15 +71,12 @@ def predict():
             else:
                 email_content = file.read().decode("utf-8")
         else:
-            data = request.get_json(silent=True) or {}
+            data = request.form or request.get_json(silent=True) or {}
             email_content = data.get("email_content", "").strip()
 
+        # Se conteúdo estiver vazio, coloca placeholder
         if not email_content:
-            return jsonify({
-                "category": "Indefinido",
-                "subcategory": "Indefinida",
-                "response": "Recebemos seu e-mail, mas o conteúdo parece estar ilegível ou vazio."
-            }), 400
+            email_content = "(Conteúdo vazio)"
 
         processed_content = preprocess_text(email_content)
 
@@ -120,6 +118,7 @@ def predict():
                 "response": "Não foi possível classificar o e-mail."
             }
 
+        # Salvar no banco
         novo_email = Email(
             conteudo=email_content,
             categoria=response_object.get("category", "Indefinido"),
@@ -156,4 +155,3 @@ def history():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-# -------------------------
