@@ -49,7 +49,7 @@ py app.py
 
 A aplicação estará disponível em http://127.0.0.1:5000.
 
-## *☁️ Implantação (Deploy) com Render8
+## *☁️ Implantação (Deploy) com Render*
 Para hospedar a aplicação online, você pode usar a plataforma Render.
 
 Crie uma Conta no Render: Se ainda não tiver, crie uma conta em https://render.com/.
