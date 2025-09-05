@@ -80,12 +80,34 @@ form.addEventListener("submit", async (e) => {
   try {
     const formData = new FormData();
 
+    // Configurações do arquivo
+    const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+    const ALLOWED_EXTENSIONS = [".txt", ".pdf"];
+
     // Prioridade: arquivo > texto
     if (emailFile.files.length > 0) {
+      const file = emailFile.files[0];
+      const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
+
+      // Verifica extensão
+      if (!ALLOWED_EXTENSIONS.includes(ext)) {
+        toggleLoader(false);
+        showToast("Arquivo inválido! Apenas .txt ou .pdf são permitidos.", "error");
+        return;
+      }
+
+      // Verifica tamanho
+      if (file.size > MAX_FILE_SIZE) {
+        toggleLoader(false);
+        showToast("Arquivo muito grande! O limite é 2 MB.", "error");
+        return;
+      }
+
       if (emailTextarea.value.trim() !== "") {
         showToast("O texto digitado será ignorado, pois um arquivo foi selecionado.", "info");
       }
-      formData.append("email_file", emailFile.files[0]);
+
+      formData.append("email_file", file);
     } else if (emailTextarea.value.trim() !== "") {
       formData.append("email_content", emailTextarea.value.trim());
     } else {
@@ -133,7 +155,6 @@ document.getElementById("clear-btn").addEventListener("click", () => {
   emailSubject.value = "";
   document.getElementById("file-name").textContent = "";
 });
-
 
 // Nome do arquivo e toast
 emailFile.addEventListener("change", () => {

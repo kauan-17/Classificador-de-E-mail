@@ -22,7 +22,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 # -------------------------
-# Modelo de Tabela com subcategoria
+# Modelo de Tabela
 # -------------------------
 class Email(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -38,7 +38,7 @@ with app.app_context():
 # -------------------------
 # Configuração da API Gemini
 # -------------------------
-genai.configure(api_key=os.environ.get("AIzaSyBwmm8sb58AVT3ZUejJv5voEU4hqIl-MRs"))
+genai.configure(api_key=os.environ.get("API_KEY"))
 
 # -------------------------
 # Função de pré-processamento
@@ -61,20 +61,38 @@ def predict():
     try:
         # Recebe conteúdo do arquivo ou texto
         email_content = ""
+        MAX_FILE_SIZE = 2 * 1024 * 1024  # 2 MB
+        ALLOWED_EXTENSIONS = {".txt", ".pdf"}
+
         if 'email_file' in request.files and request.files['email_file'].filename != "":
             file = request.files['email_file']
             filename = file.filename.lower()
+            ext = os.path.splitext(filename)[1]
+
+            # Verifica extensão
+            if ext not in ALLOWED_EXTENSIONS:
+                return jsonify({"error": "Arquivo inválido! Apenas .txt ou .pdf são permitidos."}), 400
+
+            # Verifica tamanho
+            file.seek(0, os.SEEK_END)
+            file_size = file.tell()
+            file.seek(0)
+            if file_size > MAX_FILE_SIZE:
+                return jsonify({"error": "Arquivo muito grande! O limite é 2 MB."}), 400
+
+            # Processa arquivo
             if filename.endswith(".pdf"):
                 with pdfplumber.open(file) as pdf:
                     pages = [page.extract_text() for page in pdf.pages]
                     email_content = "\n".join([p for p in pages if p])
-            else:
+            else:  # .txt
                 email_content = file.read().decode("utf-8")
+
         else:
             data = request.form or request.get_json(silent=True) or {}
             email_content = data.get("email_content", "").strip()
 
-        # Se conteúdo estiver vazio, coloca placeholder
+        # Se conteúdo estiver vazio
         if not email_content:
             email_content = "(Conteúdo vazio)"
 
@@ -155,3 +173,4 @@ def history():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+#    app.run(debug=True)    
